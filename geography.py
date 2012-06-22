@@ -17,6 +17,7 @@ WHITE = Color('white')
 GREEN = Color(0, 128, 0)
 RED = Color(200, 0, 0)
 BROWN = Color(120, 68, 33)
+BLACK = Color('black')
 
 COLOUR_MAP = {
     GRASS: GREEN,
@@ -25,6 +26,8 @@ COLOUR_MAP = {
     DEAD: BROWN
 }
 
+pygame.init()
+font = pygame.font.SysFont("FreeSans", 14)
 
 def grid_to_screen(x, y):
     return int((2 * x + (y % 2)) * SIZE * 0.5 + 0.5) + 30, int(y * YOFF + 0.5) + 30 
@@ -54,6 +57,12 @@ class Grid(object):
     def __iter__(self):
         for v in xrange(len(self.coords)):
             yield self.cells[v]	
+
+    def stats(self):
+        types = defaultdict(int)
+        for t in self:
+            types[t] += 1
+        return types
 
     def compute_next_gen(self):
         next = defaultdict(int)
@@ -92,14 +101,18 @@ class Grid(object):
     
 
 def main():
-    pygame.init()
     try:
         screen = pygame.display.set_mode((900, 800) )
         grid = Grid(20)
         grid.create_spores()
         grid.create_shrooms()
         while True:
+            screen.fill(BLACK)
             grid.draw(screen)
+            s = grid.stats()
+            screen.blit(font.render('Shrooms: %d' % s[SHROOM], True, WHITE), (0, 0))
+            screen.blit(font.render('Dead: %d' % s[DEAD], True, WHITE), (0, 20))
+            screen.blit(font.render('Spores: %d' % s[SPORE], True, WHITE), (0, 40))
             pygame.display.flip()
             grid.compute_next_gen()
             time.sleep(1)
